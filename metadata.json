@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Wallpaper",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "d@chaos-reins.com",
+                "Name": "sirspudd"
+            }
+        ],
+        "Id": "com.chaos-reins.scenic",
+        "License": "BSD",
+        "Name": "Scenic",
+		"Version": "1.0",
+        "Description": "Scenic wallpaper"
+	},
+	"X-KDE-ParentApp": "org.kde.plasmashell"
+}

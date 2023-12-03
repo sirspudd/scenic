@@ -1,8 +1,7 @@
-#!/usr/bin/env qml
+#!/usr/bin/env qml6
 
-import "qt5"
-import QtQuick 2.15
-import QtQuick.Window 2.15
+import "contents/ui/qt6"
+import QtQuick
 
 Window {
 	visibility: Window.FullScreen

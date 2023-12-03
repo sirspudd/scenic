@@ -1,6 +1,7 @@
 import Qt.labs.folderlistmodel
 import QtMultimedia
 import QtQuick
+import QtCore
 
 /*
     I work against Qt 6 and backport to Qt 5, hence the commented out Qt5-isms
@@ -14,6 +15,15 @@ import QtQuick
 Rectangle {
     color: "black"
     anchors.fill: parent
+
+	//Qt.application.name: "scenic"
+	//Qt.application.organization: "chaos reins"
+	//Qt.application.domain: "chaos-reins.com"
+
+    //Settings {
+	//	id: settings
+    //    property string videoSourcePath: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0];
+    //}
 
     LoggingCategory {
         //defaultLogLevel: LoggingCategory.Warning
@@ -62,8 +72,9 @@ Rectangle {
         id: folderModel
 
         showDirs: false
-        folder: "file:///blackhole/media/aerial/sdr"
-        onStatusChanged: {
+        folder: root.configuration.VideoSourceFoldersDos[0]
+		//settings.videoSourcePath
+		onStatusChanged: {
             if (status == FolderListModel.Ready) {
                 if (count == 0) {
                     console.log("no media found, bailing");
