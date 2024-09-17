@@ -3,12 +3,11 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
       http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
-  <kcfgfile name=""/>
-
-  <group name="General">
-    <entry name="VideoSourceFoldersDos" type="StringList">
-      <label>Folders containing videos you wish to cycle</label>
-	  <default>/blackhole/media/aerial</default>
-    </entry>
-  </group>
+    <kcfgfile name=""/>
+    <group name="General">
+        <entry name="VideoSourceFolder" type="String">
+            <label>Video Source Folder</label>
+            <whatsthis>Path to the folder containing video files to use as wallpaper</whatsthis>
+        </entry>
+    </group>
 </kcfg>

@@ -1,114 +1,57 @@
 /*
-    SPDX-FileCopyrightText: 2013 Marco Martin <mart@kde.org>
-    SPDX-FileCopyrightText: 2014 Kai Uwe Broulik <kde@privat.broulik.de>
-    SPDX-FileCopyrightText: 2019 David Redondo <kde@david-redondo.de>
-    SPDX-FileCopyrightText: 2019 Donald Carr <d@chaos-reins.com>
+ *   SPDX-FileCopyrightText: 2025 Donald Carr <d@chaos-reins.com>
+ *
+ *   SPDX-License-Identifier: BSD
+ */
 
-    SPDX-License-Identifier: GPL-2.0-or-later
-*/
-
-import QtQuick 2.15
-import QtQuick.Controls 2.15 as QQC2
-import QtQuick.Layouts 1.15
-
-import org.kde.kcmutils as KCM
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Dialogs
+import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
-import org.kde.plasma.wallpapers.image 2.0 as PlasmaWallpaper
 
-ColumnLayout {
-    id: slideshowComponent
-    property var configuration: wallpaper.configuration
-	property var cfg_VideoSourceFolders: []
+Kirigami.FormLayout {
+    id: root
 
-    function openChooserDialog() {
-        const dialogComponent = Qt.createComponent("AddFileDialog.qml");
-        dialogComponent.createObject(root);
-        dialogComponent.destroy();
+    property var configDialog
+    property var wallpaperConfiguration: wallpaper.configuration
+    property var parentLayout
+    property alias formLayout: root
+    twinFormLayouts: parentLayout
+
+    property alias cfg_videoSourceFolder: videoSourceFolderField.text
+
+    RowLayout {
+        Kirigami.FormData.label: i18n("Video Source Folder:")
+        Layout.fillWidth: true
+
+        TextField {
+            id: videoSourceFolderField
+            placeholderText: i18n("Enter path to folder containing video files")
+            Layout.fillWidth: true
+        }
+
+        Button {
+            icon.name: "folder-open"
+            text: i18n("Browse...")
+            onClicked: folderDialog.open()
+        }
     }
 
-    QQC2.ScrollView {
-            id: foldersScroll
-            Layout.fillHeight: true
-            Layout.preferredWidth: 0.35 * parent.width
-            Layout.maximumWidth: Kirigami.Units.gridUnit * 16
-            Component.onCompleted: foldersScroll.background.visible = true;
+    Label {
+        Layout.fillWidth: true
+        wrapMode: Text.WordWrap
+        text: i18n("Select the folder containing video files to use as wallpaper. The plugin will randomly play videos from this folder.")
+        font: Kirigami.Theme.smallFont
+    }
 
-            ListView {
-                id: slidePathsView
-                headerPositioning: ListView.OverlayHeader
-                header: Kirigami.InlineViewHeader {
-                    width: slidePathsView.width
-                    text: i18nd("plasma_wallpaper_org.kde.image", "Folders")
-                    actions: [
-                        Kirigami.Action {
-                            icon.name: "folder-add-symbolic"
-                            text: i18ndc("plasma_wallpaper_org.kde.image", "@action button the thing being added is a folder", "Add…")
-                            onTriggered: slideshowComponent.openChooserDialog()
-                        }
-                    ]
-                }
-                model: slideshowComponent.configuration.VideoSourceFolders // slideshowComponent.cfg_VideoSourceFolders
-                delegate: Kirigami.SubtitleDelegate {
-                    id: baseListItem
-
-                    width: slidePathsView.width
-                    // Don't need a highlight or hover effects
-                    hoverEnabled: false
-                    down: false
-
-                    text: {
-						return modelData
-                        var strippedPath
-						strippedPath = strippedPath.replace(/\/+$/, "");
-                        return strippedPath.split('/').pop()
-                    }
-                    // Subtitle: the path to the folder
-                    subtitle: {
-						return modelData
-                        var strippedPath = modelData.replace(/\/+$/, "");
-                        return strippedPath.replace(/\/[^\/]*$/, '');;
-                    }
-
-                    contentItem: RowLayout {
-                        spacing: Kirigami.Units.smallSpacing
-
-                        Kirigami.TitleSubtitle {
-                            Layout.fillWidth: true
-                            // Header: the folder
-                            title: baseListItem.text
-                            subtitle: baseListItem.subtitle
-                        }
-
-                        QQC2.ToolButton {
-                            icon.name: "edit-delete-remove-symbolic"
-                            text: i18nd("plasma_wallpaper_org.kde.image", "Remove Folder")
-                            display: QQC2.Button.IconOnly
-                            onClicked: imageWallpaper.removeSlidePath(modelData)
-
-                            QQC2.ToolTip.visible: hovered
-                            QQC2.ToolTip.text: text
-                            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
-                        }
-
-                        QQC2.ToolButton {
-                            icon.name: "document-open-folder"
-                            text: i18nd("plasma_wallpaper_org.kde.image", "Open Folder…")
-                            display: QQC2.Button.IconOnly
-                            onClicked: Qt.openUrlExternally(modelData)
-
-                            QQC2.ToolTip.visible: hovered
-                            QQC2.ToolTip.text: text
-                            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
-                        }
-                    }
-                }
-
-                Kirigami.PlaceholderMessage {
-                    anchors.centerIn: parent
-                    width: parent.width - (Kirigami.Units.largeSpacing * 4)
-                    visible: slidePathsView.count === 0
-                    text: i18nd("plasma_wallpaper_org.kde.image", "There are no wallpaper locations configured yo")
-                }
+    FolderDialog {
+        id: folderDialog
+        title: i18n("Select Video Source Folder")
+        onAccepted: {
+            if (selectedFolder) {
+                videoSourceFolderField.text = selectedFolder.toString()
             }
         }
+    }
 }

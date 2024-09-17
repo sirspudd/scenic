@@ -3,27 +3,16 @@ import QtMultimedia
 import QtQuick
 import QtCore
 
-/*
-    I work against Qt 6 and backport to Qt 5, hence the commented out Qt5-isms
-    Now I grok why Lot was not meant to look back; barf
- */
-
-// import QtQuick 2.15
-// import QtMultimedia 5.15
-// import Qt.labs.folderlistmodel 2.15
-
 Rectangle {
     color: "black"
     anchors.fill: parent
 
-	//Qt.application.name: "scenic"
-	//Qt.application.organization: "chaos reins"
-	//Qt.application.domain: "chaos-reins.com"
+    Settings {
+        id: settings
+        property string videoSourceFolder: StandardPaths.writableLocation(StandardPaths.MoviesLocation)
+    }
 
-    //Settings {
-	//	id: settings
-    //    property string videoSourcePath: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0];
-    //}
+    property string videoSourceFolder: settings.videoSourceFolder
 
     LoggingCategory {
         //defaultLogLevel: LoggingCategory.Warning
@@ -38,7 +27,6 @@ Rectangle {
         id: d
 
         property bool fsReady: false
-        property string currentPlayingUrl
         property variant shownIndexes: []
         property int displayIndex: -1
 
@@ -60,11 +48,12 @@ Rectangle {
 
         onDisplayIndexChanged: {
             var index = shownIndexes[displayIndex];
-            currentPlayingUrl = folderModel.get(index, "fileUrl");
+            player.source = folderModel.get(index, "fileUrl");
+            //console.log("source set to ", player.source);
         }
         onFsReadyChanged: {
             advance();
-            console.log("collection has ", folderModel.count, " items");
+            //console.log("collection has ", folderModel.count, " items");
         }
     }
 
@@ -72,17 +61,22 @@ Rectangle {
         id: folderModel
 
         showDirs: false
-        folder: root.configuration.VideoSourceFoldersDos[0]
-		//settings.videoSourcePath
-		onStatusChanged: {
+        folder: videoSourceFolder
+        onStatusChanged: {
             if (status == FolderListModel.Ready) {
                 if (count == 0) {
-                    console.log("no media found, bailing");
+                    console.log("no media found in", folder, ", bailing");
                     Qt.quit();
                 } else {
                     d.fsReady = true;
                 }
             }
+        }
+        onFolderChanged: {
+            // Reset when folder changes
+            d.fsReady = false;
+            d.shownIndexes = [];
+            d.displayIndex = -1;
         }
     }
 
@@ -90,13 +84,12 @@ Rectangle {
         id: player
 
         // autoPlay: true
-        source: d.currentPlayingUrl
         videoOutput: videoOutput
         onSourceChanged: {
             player.play();
         }
         onPlayingChanged: {
-            !playing ? d.advance() : undefined;
+            !player.playing ? d.advance() : undefined;
         }
     }
 
@@ -105,18 +98,21 @@ Rectangle {
 
         anchors.fill: parent
         focus: true
+        fillMode: VideoOutput.PreserveAspectCrop
         Keys.onPressed: (event) => {
             switch (event.key) {
             case Qt.Key_Right:
                 {
                     d.advance();
                     event.accepted = true;
+                    console.log("Advancing to next movie")
                     break;
                 };
             case Qt.Key_Left:
                 {
                     d.retreat();
                     event.accepted = true;
+                    console.log("Retreating to prior movie")
                     break;
                 };
             case Qt.Key_Escape:
@@ -128,7 +124,7 @@ Rectangle {
         }
 
         MouseArea {
-			enabled: false
+			      enabled: false
             anchors.fill: parent
             onClicked: {
                 player.metaData.keys().forEach((key) => {
